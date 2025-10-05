@@ -1,0 +1,417 @@
+#include <check.h>
+#include "../s21_matrix.h"
+
+#test create_simple
+    matrix_t res={0};
+    ck_assert_int_eq(s21_create_matrix(rand() % 100 + 1,rand() % 100 + 1, &res),OK);
+    s21_remove_matrix(&res);
+
+    matrix_t res11={0};
+    ck_assert_int_eq(s21_create_matrix(rand() % 10000 + 1001,rand() % 10000 + 1001, &res11),OK);
+    s21_remove_matrix(&res11);
+
+    matrix_t res1={0};
+    ck_assert_int_eq(s21_create_matrix(0,1,&res1),INCORRECT_MATRIX);
+    s21_remove_matrix(&res);
+
+    matrix_t res2={0};
+    ck_assert_int_eq(s21_create_matrix(1,0,&res2),INCORRECT_MATRIX);
+    s21_remove_matrix(&res);
+
+    matrix_t res3={0};
+    ck_assert_int_eq(s21_create_matrix(0,0,&res3),INCORRECT_MATRIX);
+    s21_remove_matrix(&res);
+
+    matrix_t *res0=s21_NULL;
+    ck_assert_int_eq(s21_create_matrix(1,1,res0),INCORRECT_MATRIX);
+
+
+
+#test create_dimple
+  const int rows = rand() % 100 + 1;
+  const int cols = rand() % 100 + 1;
+  matrix_t m = {0};
+  s21_create_matrix(rows, cols, &m);
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      m.matrix[i][j] = 0;
+      ck_assert_ldouble_eq_tol(0, m.matrix[i][j], 1e-07);
+    }
+  }
+  ck_assert_int_eq(m.rows, rows);
+  ck_assert_int_eq(m.columns, cols);
+  s21_remove_matrix(&m);
+
+#test eq_simple
+    matrix_t A, B;
+    s21_create_matrix(2, 2, &A);
+    s21_create_matrix(2, 2, &B);
+
+    A.matrix[0][0] = 1.0; A.matrix[0][1] = 2.0;
+    A.matrix[1][0] = 3.0; A.matrix[1][1] = 4.0;
+
+    B.matrix[0][0] = 1.0; B.matrix[0][1] = 2.0;
+    B.matrix[1][0] = 3.0; B.matrix[1][1] = 4.0;
+
+    ck_assert_int_eq(s21_eq_matrix(&A, &B),SUCCESS);
+
+    s21_remove_matrix(&A);
+    s21_remove_matrix(&B);
+
+    matrix_t C, D;
+    s21_create_matrix(2, 2, &C);
+    s21_create_matrix(2, 2, &D);
+
+    C.matrix[0][0] = 1.0; C.matrix[0][1] = 2.0;
+    C.matrix[1][0] = 4.0; C.matrix[1][1] = 4.0;
+
+    D.matrix[0][0] = 1.0; D.matrix[0][1] = 2.0;
+    D.matrix[1][0] = 3.0; D.matrix[1][1] = 4.0;
+
+    ck_assert_int_eq(s21_eq_matrix(&C, &D),FAILURE);
+
+    s21_remove_matrix(&C);
+    s21_remove_matrix(&D);
+
+#test eq_dimple
+    matrix_t A={0},B={0};
+    s21_create_matrix(2,3,&A);
+    s21_create_matrix(3,2,&B);
+    ck_assert_int_eq(s21_eq_matrix(&A,&B), FAILURE);
+    s21_remove_matrix(&A);
+    s21_remove_matrix(&B);
+
+#test sum_simple
+    matrix_t a,res={0};
+    s21_create_matrix(1,2,&a);
+    s21_create_matrix(1,2,&res);
+    ck_assert_int_eq(s21_sum_matrix(&a, s21_NULL, &res), INCORRECT_MATRIX);
+    s21_remove_matrix(&res);
+    s21_remove_matrix(&a);
+
+    matrix_t a1,b1,res1={0};
+    s21_create_matrix(1,2,&a1);
+    s21_create_matrix(2,1,&b1);
+    s21_create_matrix(1,2,&res1);
+    ck_assert_int_eq(s21_sum_matrix(&a1, &b1, &res1), CALC_ERROR);
+    s21_remove_matrix(&a1);
+    s21_remove_matrix(&b1);
+    s21_remove_matrix(&res1);
+
+#test sum_dimple
+    int rows = rand() % 100 + 1; 
+    int cols = rand() % 100 + 1; 
+    matrix_t m, mtx, check, res={0}; 
+    s21_create_matrix(rows,cols,&m);
+    s21_create_matrix(rows,cols,&mtx);
+    s21_create_matrix(rows,cols,&check);
+    s21_create_matrix(rows,cols,&res);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            m.matrix[i][j] = rand() % 100 + 1;
+            mtx.matrix[i][j] = rand() % 100 + 1;
+            check.matrix[i][j] = m.matrix[i][j] + mtx.matrix[i][j];
+        }
+    }
+    ck_assert_int_eq(s21_sum_matrix(&m, &mtx, &res), OK);
+
+    ck_assert_int_eq(s21_eq_matrix(&check, &res), SUCCESS);
+
+    s21_remove_matrix(&m);
+    s21_remove_matrix(&mtx);
+    s21_remove_matrix(&res);
+    s21_remove_matrix(&check);
+
+#test sub_simple
+    matrix_t a,res={0};
+    s21_create_matrix(1,2,&a);
+    s21_create_matrix(1,2,&res);
+    ck_assert_int_eq(s21_sub_matrix(&a, s21_NULL, &res), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+    s21_remove_matrix(&res);
+
+    matrix_t a1,b1,res1={0};
+    s21_create_matrix(1,2,&a1);
+    s21_create_matrix(2,1,&b1);
+    s21_create_matrix(1,2,&res1);
+    ck_assert_int_eq(s21_sub_matrix(&a1, &b1, &res1), CALC_ERROR);
+    s21_remove_matrix(&a1);
+    s21_remove_matrix(&b1);
+    s21_remove_matrix(&res1);   
+
+#test sub_dimple
+    int rows = rand() % 100 + 1; 
+    int cols = rand() % 100 + 1; 
+    matrix_t m, mtx, check, res={0}; 
+    s21_create_matrix(rows,cols,&m);
+    s21_create_matrix(rows,cols,&mtx);
+    s21_create_matrix(rows,cols,&check);
+    s21_create_matrix(rows,cols,&res);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            m.matrix[i][j] = rand() % 100 + 1;
+            mtx.matrix[i][j] = rand() % 100 + 1;
+            check.matrix[i][j] = m.matrix[i][j] - mtx.matrix[i][j];
+        }
+    }
+    ck_assert_int_eq(s21_sub_matrix(&m, &mtx, &res), OK);
+
+    ck_assert_int_eq(s21_eq_matrix(&check, &res), SUCCESS);
+
+    s21_remove_matrix(&m);
+    s21_remove_matrix(&mtx);
+    s21_remove_matrix(&res);
+    s21_remove_matrix(&check);
+
+#test mult_num_simple
+    matrix_t a={0};
+    s21_create_matrix(1,2,&a);
+    ck_assert_int_eq(s21_mult_number(&a,2. ,s21_NULL), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+
+#test mult_num_dimple
+  int rows = rand() % 100 + 1;
+  int cols = rand() % 100 + 1;
+  matrix_t m = {0};
+  s21_create_matrix(rows, cols, &m);
+  matrix_t check = {0};
+  s21_create_matrix(rows, cols, &check);
+  double mult_number = rand() % 100 + 1;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      m.matrix[i][j] = rand() % 100 + 1;
+      check.matrix[i][j] = m.matrix[i][j] * mult_number;
+    }
+  }
+  matrix_t res = {0};
+  ck_assert_int_eq(s21_mult_number(&m, mult_number, &res), OK);
+  ck_assert_int_eq(s21_eq_matrix(&check, &res), SUCCESS);
+  s21_remove_matrix(&m);
+  s21_remove_matrix(&res);
+  s21_remove_matrix(&check);
+
+#test mult_mat_simple
+    matrix_t a,b={0};
+    s21_create_matrix(1,2,&a);
+    s21_create_matrix(2,1,&b);
+    ck_assert_int_eq(s21_mult_matrix(&a,&b,s21_NULL), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+    s21_remove_matrix(&b);
+
+    matrix_t a1,b1,res1={0};
+    s21_create_matrix(1,2,&a1);
+    s21_create_matrix(5,4,&b1);
+    s21_create_matrix(1,2,&res1);
+    ck_assert_int_eq(s21_mult_matrix(&a1, &b1, &res1), CALC_ERROR);
+    s21_remove_matrix(&a1);
+    s21_remove_matrix(&b1);
+    s21_remove_matrix(&res1);
+
+#test mult_mat_dimple
+  int rows = rand() % 100 + 1;
+  int cols = rand() % 100 + 1;
+  matrix_t m = {0};
+  s21_create_matrix(rows, cols, &m);
+  matrix_t mtx = {0};
+  s21_create_matrix(cols, rows, &mtx);
+
+  for (int i = 0; i < rows; i++)
+    for (int j = 0; j < cols; j++) m.matrix[i][j] = rand() % 100 + 1;
+
+  for (int i = 0; i < cols; i++)
+    for (int j = 0; j < rows; j++) mtx.matrix[i][j] = rand() % 100 + 1;
+
+  matrix_t check = {0};
+  s21_create_matrix(m.rows, mtx.columns, &check);
+
+  for (int i = 0; i < m.rows; i++) {
+    for (int j = 0; j < mtx.columns; j++) {
+      check.matrix[i][j] = 0;
+      for (int k = 0; k < m.columns; k++)
+        check.matrix[i][j] += m.matrix[i][k] * mtx.matrix[k][j];
+    }
+  }
+
+  matrix_t res = {0};
+  ck_assert_int_eq(s21_mult_matrix(&m, &mtx, &res), OK);
+  ck_assert_int_eq(s21_eq_matrix(&check, &res), SUCCESS);
+
+  s21_remove_matrix(&m);
+  s21_remove_matrix(&mtx);
+  s21_remove_matrix(&res);
+  s21_remove_matrix(&check);
+
+#test trans_simple
+    matrix_t a={0};
+    s21_create_matrix(1,2,&a);
+    ck_assert_int_eq(s21_transpose(&a,s21_NULL), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+
+#test trans_dimple
+  const int rows = rand() % 100 + 1;
+  const int cols = rand() % 100 + 1;
+  matrix_t m = {0};
+  s21_create_matrix(rows, cols, &m);
+
+  matrix_t check = {0};
+  s21_create_matrix(cols, rows, &check);
+
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      double rand_val = rand() % 100 + 1;
+      m.matrix[i][j] = rand_val;
+      check.matrix[j][i] = rand_val;
+    }
+  }
+
+  matrix_t res = {0};
+  ck_assert_int_eq(s21_transpose(&m, &res), OK);
+  ck_assert_int_eq(s21_eq_matrix(&check, &res), SUCCESS);
+
+  s21_remove_matrix(&m);
+  s21_remove_matrix(&res);
+  s21_remove_matrix(&check);
+
+#test calc_simple
+    matrix_t a={0};
+    s21_create_matrix(1,2,&a);
+    ck_assert_int_eq(s21_calc_complements(&a,s21_NULL), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+
+    matrix_t res,a0={0};
+    s21_create_matrix(1,2,&res);
+    ck_assert_int_eq(s21_calc_complements(&a0,&res), MALLOC_FAIL);
+    s21_remove_matrix(&res);
+
+    matrix_t result={0};
+    int return_value = s21_calc_complements(s21_NULL, &result);
+    ck_assert_int_eq(return_value, INCORRECT_MATRIX);   
+
+    matrix_t a1,res1={0};
+    s21_create_matrix(1,2,&a1);
+    s21_create_matrix(1,2,&res1);
+    ck_assert_int_eq(s21_calc_complements(&a1,&res1), CALC_ERROR);
+    s21_remove_matrix(&a1);
+    s21_remove_matrix(&res1);
+
+    matrix_t a2,res2={0};
+    s21_create_matrix(1,1,&a2);
+    s21_create_matrix(1,1,&res2);
+    ck_assert_int_eq(s21_calc_complements(&a2,&res2), OK);
+    s21_remove_matrix(&a2);
+    s21_remove_matrix(&res2);  
+
+#test calc_dimple
+  matrix_t expected = {0};
+  matrix_t m = {0};
+  matrix_t result = {0};
+  int code1 = s21_create_matrix(3, 3, &m);
+  int code2 = s21_create_matrix(3, 3, &expected);
+  if (!code1 && !code2) {
+    m.matrix[0][0] = 1;
+    m.matrix[0][1] = 2;
+    m.matrix[0][2] = 3;
+
+    m.matrix[1][0] = 0;
+    m.matrix[1][1] = 4;
+    m.matrix[1][2] = 2;
+
+    m.matrix[2][0] = 5;
+    m.matrix[2][1] = 2;
+    m.matrix[2][2] = 1;
+
+    expected.matrix[0][0] = 0;
+    expected.matrix[0][1] = 10;
+    expected.matrix[0][2] = -20;
+
+    expected.matrix[1][0] = 4;
+    expected.matrix[1][1] = -14;
+    expected.matrix[1][2] = 8;
+
+    expected.matrix[2][0] = -8;
+    expected.matrix[2][1] = -2;
+    expected.matrix[2][2] = 4;
+
+    int code = s21_calc_complements(&m, &result);
+    ck_assert_int_eq(s21_eq_matrix(&result, &expected), SUCCESS);
+    ck_assert_int_eq(code, OK);
+    s21_remove_matrix(&m);
+    s21_remove_matrix(&result);
+    s21_remove_matrix(&expected);
+  }
+
+#test det_simple
+    double res=0;
+    ck_assert_int_eq(s21_determinant(s21_NULL, &res), INCORRECT_MATRIX);
+
+    matrix_t a={0};
+    double res1=0;
+    s21_create_matrix(1,2,&a);
+    ck_assert_int_eq(s21_determinant(&a,&res1), CALC_ERROR);
+    s21_remove_matrix(&a);
+
+    matrix_t a1={0};
+    double res11=0;
+    s21_create_matrix(1,1,&a1);
+    ck_assert_int_eq(s21_determinant(&a1,&res11), OK);
+    s21_remove_matrix(&a1);
+
+#test det_dimple
+  const int size = 5;
+  matrix_t m = {0};
+  s21_create_matrix(size, size, &m);
+  for (int i = 0; i < size; i++)
+  {
+    for (int j = 0; j < size; j++)
+    { 
+        m.matrix[i][j] = j;
+    }
+  }
+  double res = 0;
+  int code = s21_determinant(&m, &res);
+  ck_assert_double_eq_tol(res, 0, 1e-6);
+  ck_assert_int_eq(code, OK);
+  s21_remove_matrix(&m);
+
+#test inverse_simple
+    matrix_t a={0};
+    s21_create_matrix(1,1,&a);
+    ck_assert_int_eq(s21_inverse_matrix(&a,s21_NULL), INCORRECT_MATRIX);
+    s21_remove_matrix(&a);
+
+    matrix_t a1,res={0};
+    s21_create_matrix(1,2,&a1);
+    s21_create_matrix(1,2,&res);
+    ck_assert_int_eq(s21_inverse_matrix(&a1,&res), CALC_ERROR);
+    s21_remove_matrix(&a1);   
+    s21_remove_matrix(&res);
+
+#test inverse_dimple
+    matrix_t A, C={0};
+  s21_create_matrix(3, 3, &A);
+  s21_create_matrix(3, 3, &C);
+  C.matrix[0][0] = 1.0;
+  C.matrix[0][1] = -1.0;
+  C.matrix[0][2] = 1.0;
+  C.matrix[1][0] = -38.0;
+  C.matrix[1][1] = 41.0;
+  C.matrix[1][2] = -34.0;
+  C.matrix[2][0] = 27.0;
+  C.matrix[2][1] = -29.0;
+  C.matrix[2][2] = 24.0;
+  A.matrix[0][0] = 2.0;
+  A.matrix[0][1] = 5.0;
+  A.matrix[0][2] = 7.0;
+  A.matrix[1][0] = 6.0;
+  A.matrix[1][1] = 3.0;
+  A.matrix[1][2] = 4.0;
+  A.matrix[2][0] = 5.0;
+  A.matrix[2][1] = -2.0;
+  A.matrix[2][2] = -3.0;
+  matrix_t B={0};
+  s21_inverse_matrix(&A, &B);
+  int res = s21_eq_matrix(&B, &C);
+  ck_assert_int_eq(res, SUCCESS);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&B);
+  s21_remove_matrix(&C);
